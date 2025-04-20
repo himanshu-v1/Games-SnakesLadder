@@ -1,0 +1,1279 @@
+<!--
+  Copyright (c) 2017-present, Facebook, Inc.
+  All rights reserved.
+
+  This source code is licensed under the license found in the
+  LICENSE file in the root directory of this source tree.
+-->
+
+<!DOCTYPE html>
+<html style="height:-webkit-fill-available;">
+<head>
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="full-screen" content="yes"/>
+  <meta name="screen-orientation" content="portrait"/>
+  <meta name="viewport" content="width=device-width, initial-scale=0, user-scalable=no"/>
+  <link href="css/style.css" rel="stylesheet" type="text/css"/>
+  <script src="https://kit.fontawesome.com/48f267bb8d.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/mock/fbinstant.6.2.mock.js"></script>
+  <script type="text/javascript">
+
+    /*
+    DB
+    */
+    let gameData = {};
+
+    const assets = [
+      'img/asset1.png',
+      'img/asset2.png',
+      'img/asset3.png',
+      'img/asset4.png'
+    ];
+
+    let steps = {
+        'green': {
+          'onBoard': false,
+          'pos': '0',
+          'won': false
+        },
+        'red': {
+          'onBoard': false,
+          'pos': '0',
+          'won': false
+        },
+        'yellow': {
+          'onBoard': false,
+          'pos': '0',
+          'won': false
+        },
+        'blue': {
+          'onBoard': false,
+          'pos': '0',
+          'won': false
+        }
+    };
+
+    let colors = ['red','yellow','green','blue'];
+
+    let players = {
+      'player1': {
+        'color': colors[0],
+        'id': ''
+      },
+      'player2': {
+        'color': colors[1],
+        'id': ''
+      },
+      'player3': {
+        'color': colors[2],
+        'id': ''
+      },
+      'player4': {
+        'color': colors[3],
+        'id': ''
+      }
+    }
+
+    let boxes = [];
+    let box = {};
+    pawnsLoc = {
+      'red': {
+        'x': 0,
+        'y': 0,
+        'onBoard': 0
+      },
+      'green': {
+        'x': 0,
+        'y': 0,
+        'onBoard': 0
+      },
+      'blue': {
+        'x': 0,
+        'y': 0,
+        'onBoard': 0
+      },
+      'yellow': {
+        'x': 0,
+        'y': 0,
+        'onBoard': 0
+      }
+    }
+
+    function createGameData(ctx, playersData){
+      //FBInstant.context.getPlayersAsync().then(function(players){
+        for(let i=0; i<playersData.length;i++){
+          gameData[ctx].push({
+            'playerId': playersData[i].getID(),
+            'color': colors[i+1],
+            'position': i+2,
+            'pos_in_array': i,
+            'pushedToBoard': ''
+          });
+          let l = {
+            'pId': playersData[i].getID(),
+            'pName': playersData[i].getName(),
+            'pPhoto': playersData[i].getPhoto()
+          }
+          players['player'+gameData[ctx][i+1].position].id = l;
+        }
+      //});
+      //console.log("game data: "+ JSON.stringify(gameData));
+      //console.log("Player data: "+ JSON.stringify(players));
+      createElem();
+
+      for(let i=0; i<100; i++){
+        var o = document.getElementById((i+1).toString());
+        o.click();
+        boxes.push(box);
+        o.removeAttribute('onclick');
+      }
+      //console.log(JSON.stringify(boxes));
+      for(let i=0; i<4; i++){
+        var p = document.getElementById(colors[i]);
+        p.click();
+        p.removeAttribute('onclick');
+      }
+      console.log("Pawns Init: "+JSON.stringify(pawnsLoc));
+    }
+
+    function createElem(viewPos, ){
+      let player1 = document.getElementById('pl1');
+      let pl_1_pic = document.createElement('img');
+      pl_1_pic.setAttribute('src', '');
+      pl_1_pic.setAttribute('id', 'im1');
+      pl_1_pic.setAttribute('alt', 'p1');
+      let pl_1_dice = document.createElement('img');
+      pl_1_dice.setAttribute('src', '');
+      pl_1_dice.setAttribute('id', 'dice1');
+      pl_1_dice.setAttribute('alt', 'd1');
+      player1.appendChild(pl_1_pic);
+      player1.appendChild(pl_1_dice);
+      $('#dice1').click(function(){
+        dice('player1');
+      });
+
+      let player2 = document.getElementById('pl2');
+      let pl_2_pic = document.createElement('img');
+      pl_2_pic.setAttribute('src', '');
+      pl_2_pic.setAttribute('id', 'im2');
+      pl_2_pic.setAttribute('alt', 'p2');
+      let pl_2_dice = document.createElement('img');
+      pl_2_dice.setAttribute('src', '');
+      pl_2_dice.setAttribute('id', 'dice2');
+      pl_2_dice.setAttribute('alt', 'd2');
+      player2.appendChild(pl_2_dice);
+      player2.appendChild(pl_2_pic);
+      $('#dice2').click(function(){
+        dice('player2');
+      });
+
+      let player3 = document.getElementById('pl3');
+      let pl_3_pic = document.createElement('img');
+      pl_3_pic.setAttribute('src', '');
+      pl_3_pic.setAttribute('id', 'im3');
+      pl_3_pic.setAttribute('alt', 'p3');
+      let pl_3_dice = document.createElement('img');
+      pl_3_dice.setAttribute('src', '');
+      pl_3_dice.setAttribute('id', 'dice3');
+      pl_3_dice.setAttribute('alt', 'd3');
+      player3.appendChild(pl_3_dice);
+      player3.appendChild(pl_3_pic);
+      $('#dice3').click(function(){
+        dice('player3');
+      });
+
+      let player4 = document.getElementById('pl4');
+      let pl_4_pic = document.createElement('img');
+      pl_4_pic.setAttribute('src', '');
+      pl_4_pic.setAttribute('id', 'im4');
+      pl_4_pic.setAttribute('alt', 'p4');
+      let pl_4_dice = document.createElement('img');
+      pl_4_dice.setAttribute('src', '');
+      pl_4_dice.setAttribute('id', 'dice4');
+      pl_4_dice.setAttribute('alt', 'd4');
+      player4.appendChild(pl_4_pic);
+      player4.appendChild(pl_4_dice);
+      $('#dice4').click(function(){
+        dice('player4');
+      });
+    }
+
+    function deletElem(){
+      let player1 = document.getElementById('pl1');
+      let player2 = document.getElementById('pl2');
+      let player3 = document.getElementById('pl3');
+      let player4 = document.getElementById('pl4');
+
+      let pl_1_pic = document.getElementById('im1');
+      let pl_2_pic = document.getElementById('im2');
+      let pl_3_pic = document.getElementById('im3');
+      let pl_4_pic = document.getElementById('im4');
+
+      let pl_1_dice = document.getElementById('dice1');
+      let pl_2_dice = document.getElementById('dice2');
+      let pl_3_dice = document.getElementById('dice3');
+      let pl_4_dice = document.getElementById('dice4');
+
+      player1.removeChild(pl_1_pic);
+      player1.removeChild(pl_1_dice);
+      player2.removeChild(pl_2_pic);
+      player2.removeChild(pl_2_dice);
+      player3.removeChild(pl_3_pic);
+      player3.removeChild(pl_3_dice);
+      player4.removeChild(pl_4_pic);
+      player4.removeChild(pl_4_dice);
+
+      steps = {
+          'green': {
+            'onBoard': false,
+            'pos': '0',
+            'won': false
+          },
+          'red': {
+            'onBoard': false,
+            'pos': '0',
+            'won': false
+          },
+          'yellow': {
+            'onBoard': false,
+            'pos': '0',
+            'won': false
+          },
+          'blue': {
+            'onBoard': false,
+            'pos': '0',
+            'won': false
+          }
+      };
+
+      gameData = {};
+
+      let boxes = [];
+      let box = {};
+      pawnsLoc = {
+        'red': {
+          'x': 0,
+          'y': 0,
+          'onBoard': 0
+        },
+        'green': {
+          'x': 0,
+          'y': 0,
+          'onBoard': 0
+        },
+        'blue': {
+          'x': 0,
+          'y': 0,
+          'onBoard': 0
+        },
+        'yellow': {
+          'x': 0,
+          'y': 0,
+          'onBoard': 0
+        }
+      };
+    }
+
+    window.onload = function() {
+      $('#mHead').hide();
+      $('#info-section').hide();
+      $('#intro-section').hide();
+      $('#gameDiv').hide();
+      setScreenSize();
+
+      // When the window loads, start to initialize the SDK
+      FBInstant.initializeAsync().then(function() {
+
+        // We can start to load assets
+        for (let i in assets) {
+          // When preloading assets, make sure to report the progress
+          FBInstant.setLoadingProgress(i / assets.length * 100);
+        }
+
+        // Now that assets are loaded, call startGameAsync
+        //FBInstant.startGameAsync().then(onStart);
+        FBInstant.startGameAsync().then(initializeData);
+      });
+    };
+
+    function setScreenSize(){
+      let screenSize = window.innerHeight;
+      console.log(screenSize);
+      $("body").height(screenSize);
+    }
+
+    function initializeData(){
+      $('#photo1').attr('src', FBInstant.player.getPhoto());
+      $('#player-name1').html(FBInstant.player.getName());
+      $('#mHead').show();
+      //$('#alertDiv').hide();
+      $('#intro-section').show();
+    }
+
+    function onStart() {
+      // This is called when the user has tapped Play
+      // Information from the SDK can now be accessed
+      $('#photo').attr('src', FBInstant.player.getPhoto());
+      $('#player-name').html(FBInstant.player.getName());
+      $('#player-id').html(FBInstant.player.getID());
+      $('#context-type').html(FBInstant.context.getType());
+      try{
+        $('#entrypointdata').html(JSON.stringify(FBInstant.getEntryPointData()));
+      }catch(e){
+        console.log(e);
+      }
+      $('#info-section').show();
+    }
+
+    function showGame(type){
+      //alert(type);
+      $('#mBody').hide();
+      $('#gameDiv').show();
+      //console.log("Height:"+ $('#board').get(0).offsetHeight);
+      //console.log("Width:"+ $('#board').get(0).offsetWidth);
+      $('#gridDiv').height($('#board').get(0).offsetHeight);
+      $('#gridDiv').width($('#board').get(0).offsetWidth);
+      //$('#gridDiv').css('margin', '5px');
+
+      $('#wrapperTopSub').width($('#board').get(0).offsetWidth);
+      $('#wrapperBottomSub').width($('#board').get(0).offsetWidth);
+
+      $('#pavillion').width((($('#playArea').get(0).offsetWidth - $('#board').get(0).offsetWidth)/2)-2);
+      $('#pavillion').height((($('#board').get(0).offsetHeight)/10)*2);
+      $('#pavillion').css('top', ($('#playArea').height() + $('#wrapperTop').height() + $('#gameDivHead').height()) - ((($('#board').get(0).offsetHeight)/10)*2));
+
+      FBInstant.startGameAsync().then(function(){
+          let ctx = FBInstant.context.getID();
+          let playerss;
+          gameData[ctx] = [];
+          gameData[ctx].push({
+            'playerId': FBInstant.player.getID(),
+            'color': colors[0],
+            'position': 1,
+            'pos_in_array': 0,
+            'pushedToBoard': '',
+          });
+          let len = 0;
+          let inter = setInterval(function(){
+            console.log("Interval Started");
+            if(len == 3){
+              clearTimeout(inter);
+              console.log("Creating Data");
+              createGameData(ctx, playerss);
+              return;
+            }
+            FBInstant.context.getPlayersAsync().then(function(players){
+              len = players.length;
+              console.log("lenght: "+len);
+              playerss = players;
+            });
+          },1000);
+      });
+      //console.log("creating elements");
+      //createElem();
+    }
+
+    function back(){
+      let result = confirm("Quit game?");
+      if (result) {
+        //console.log(result);
+        deletElem();
+        $('#gameDiv').hide();
+        $('#mBody').show();
+      }
+    }
+
+    function settings(){
+
+    }
+
+    function generateRandom(){
+      //let n = new Date().getTime().toString().split("");
+      //let fn = parseInt(n[n.length-1]);
+      let fn = Math.random().toString().split(".")[1].split("")[0];
+      if(fn == 0){
+        return undefined;
+      }
+      else if(fn <= 6){
+        return fn;
+      }
+      else{
+        return undefined;
+      }
+    }
+
+    function roll(){
+      let fn = generateRandom();
+      try{
+        while(!fn){
+          fn = generateRandom();
+          if(fn){
+            break;
+          }
+        }
+      }
+      catch(e){
+        console.log(e);
+      }
+      console.log(fn);
+      return fn;
+    }
+
+    function directionSteps(max, pos, val, playerCode){
+      //console.log("max: " + max);
+      console.log("current Position: "+pos);
+      //console.log("Dice value: " + val);
+      let newPosition = (parseInt(pos)+parseInt(val));
+      console.log("New Position: " + newPosition);
+      steps[players[playerCode].color].pos = newPosition;
+
+      let retObj = {};
+
+      t1 = max-parseInt(pos);    //t1=3
+      let forward = (parseInt(max)/10)%2==1?true:false;
+      if(forward){
+        if(parseInt(val) <= t1){
+          retObj = {
+            'forward': val,
+            'up': 0,
+            'backward': 0,
+          };
+        }
+        else{
+          retObj = {
+            'forward': t1,
+            'up': 1,
+            'backward': val-t1-1
+          }
+        }
+      }
+      else{
+        if(parseInt(val) <= t1){
+          retObj = {
+            'forward': 0,
+            'up': 0,
+            'backward': val
+          };
+        }
+        else{
+          retObj = {
+            'forward': val-t1-1,
+            'up': 1,
+            'backward': t1
+          }
+        }
+      }
+      console.log("Generated: " + JSON.stringify(retObj));
+      animate(retObj, forward?'forward':'backward', newPosition, playerCode);
+      if(parseInt(steps[players[playerCode].color].pos) == 100){
+        steps[players[playerCode].color].won = true;
+      }
+      return retObj;
+    }
+
+    function calcSteps(val, playerCode){ //pos=7, val=5
+      let retObj = {}, pos = steps[players[playerCode].color].pos;
+      if(pos > 0 && pos <= 10){
+        retObj = directionSteps(10, pos, val, playerCode);
+      }
+      else if(pos > 10 && pos <= 20){
+        retObj = directionSteps(20, pos, val, playerCode);
+      }
+      else if(pos > 20 && pos <= 30){
+        retObj = directionSteps(30, pos, val, playerCode);
+      }
+      else if(pos > 30 && pos <= 40){
+        retObj = directionSteps(40, pos, val, playerCode);
+      }
+      else if(pos > 40 && pos <= 50){
+        retObj = directionSteps(50, pos, val, playerCode);
+      }
+      else if(pos > 50 && pos <= 60){
+        retObj = directionSteps(60, pos, val, playerCode);
+      }
+      else if(pos > 60 && pos <= 70){
+        retObj = directionSteps(70, pos, val, playerCode);
+      }
+      else if(pos > 70 && pos <= 80){
+        retObj = directionSteps(80, pos, val, playerCode);
+      }
+      else if(pos > 80 && pos <= 90){
+        retObj = directionSteps(90, pos, val, playerCode);
+      }
+      else if(pos > 90 && pos <= 100){
+        retObj = directionSteps(100, pos, val, playerCode);
+      }
+      else{
+
+      }
+      if(steps[players[playerCode].color].won){
+          console.log(players[playerCode].color+" Won!!!");
+      }
+    }
+
+    let interId;
+
+    function animate(buff, dir, open, playerCode){
+      try{
+        console.log("direciton: "+dir);
+        var elem = document.getElementById(players[playerCode].color);
+        if(open==1){
+          //opening animation
+          console.log("Inside open animate");
+          let pawnTop = pawnsLoc[players[playerCode].color].y;
+          let pawnLeft = pawnsLoc[players[playerCode].color].x;
+          let ty = boxes[0].y;
+          let tx = boxes[0].x;
+          let difftop = Math.abs(pawnTop - ty);
+          let diffLeft = Math.abs(pawnLeft - tx);
+          interId = setInterval(frame, 1);
+          //difftop,diffLeft,oneTop,oneLeft,elem
+          function frame(){
+            //console.log(a+b);
+            if(elem.style.top == "") elem.style.top = pawnsLoc[elem.id].y+"px";
+            if(elem.style.left == "") elem.style.left = pawnsLoc[elem.id].x+"px";
+
+            //console.log(elem.style.top +" "+ elem.style.left);
+
+            if(Math.floor(getInt('top', elem)) <= Math.floor(ty)){
+              elem.style.top = (getInt('top', elem)+1) +"px";
+            }
+            if(Math.floor(getInt('left', elem)) <= Math.floor(tx)){
+              elem.style.left = (getInt('left', elem)+1) +"px";
+            }
+            /*console.log("top: "+ elem.style.top + "("+ ty +")");
+            console.log("left: "+ elem.style.left + "("+ tx +")");*/
+            //console.log("top: "+ getInt('top', elem) + "("+ ty +")");
+            //console.log("left: "+ getInt('left', elem) + "("+ tx +")");
+            if(Math.floor(getInt('top', elem)) >= Math.floor(parseInt(ty)) && Math.floor(getInt('left', elem)) >= Math.floor(parseInt(tx))){
+              clearInterval(interId);
+              pawnsLoc[players[playerCode].color].onBoard = 1;
+              console.log("Interval cleared");
+            }
+          }
+        }
+        else{
+          //normal animation
+          let xBuffer = Math.abs(parseInt(boxes[0].x) - parseInt(boxes[1].x));
+          let yBuffer = Math.abs(parseInt(boxes[0].y) - parseInt(boxes[10].y));
+          if(dir == 'forward'){
+            //animate forward
+            if(buff.forward != 0){
+              forwardAniPromise(parseInt(buff.forward), elem, xBuffer).then(
+              function(){
+                console.log("forward finished");
+                console.log(buff.up);
+                if(buff.up != 0){
+                  //animate top if any
+                  topAniPromise(parseInt(buff.up), elem, yBuffer).then(
+                  function(){
+                    console.log("Top finished");
+                    console.log(buff.backward);
+                    //animate backwards
+                    if(buff.backward!=0)
+                      backwardAniPromise(parseInt(buff.backward), elem, xBuffer).then(function(){
+                        console.log("backward finished");
+                      });
+                  });
+                }
+              });
+            }
+            else{
+              topAniPromise(parseInt(buff.up), elem, yBuffer).then(
+              function(){
+                console.log("Top finished");
+                console.log(buff.backward);
+                //animate backwards
+                if(buff.backward!=0)
+                  backwardAniPromise(parseInt(buff.backward), elem, xBuffer).then(function(){
+                    console.log("backward finished");
+                  });
+              });
+            }
+          }
+          else{
+            if(buff.backward != 0){
+              //animate backwards
+              backwardAniPromise(parseInt(buff.backward), elem, xBuffer).then(
+              function(){
+                //animate top if any
+                console.log("backward finished");
+                console.log(buff.up);
+                if(buff.up != 0)
+                  topAniPromise(parseInt(buff.up), elem, yBuffer).then(
+                  function(){
+                    //animate forward
+                    console.log("Top finished");
+                    console.log(buff.forward);
+                    if(buff.forward != 0)
+                      forwardAniPromise(parseInt(buff.forward), elem, xBuffer).then(function(){
+                        console.log("forward finished");
+                      });
+                  });
+              });
+            }
+            else{
+              topAniPromise(parseInt(buff.up), elem, yBuffer).then(
+              function(){
+                console.log("Top finished");
+                console.log(buff.backward);
+                //animate backwards
+                if(buff.forward != 0)
+                  forwardAniPromise(parseInt(buff.forward), elem, xBuffer).then(function(){
+                    console.log("backward finished");
+                  });
+              });
+            }
+          }
+        }
+        //return;
+      }
+      catch(e){
+        clearInterval(interId);
+        console.log("Interval cleared:"+e);
+      }
+    }
+
+    function forwardAniPromise(count, elem, buffer){
+      return new Promise(function(resolve, reject){
+        forwardAni(resolve, reject, count, elem, buffer);
+      });
+    }
+    function topAniPromise(count, elem, buffer){
+      return new Promise(function(resolve, reject){
+        topAni(resolve, reject, count, elem, buffer);
+      });
+    }
+    function backwardAniPromise(count, elem, buffer){
+      return new Promise(function(resolve, reject){
+        backwardAni(resolve, reject, count, elem, buffer);
+      });
+    }
+
+    let jumpAniParams = {
+      jumpHeight: 21,
+      currJumpHeight: 0,
+      midCount: 9,
+      switchVar: true
+    };
+
+    function forwardAni(resolve, reject, count, elem, buffer){
+      //let top = getInt('top', elem);
+      let left = getInt('left', elem);
+      let tempCount = count;
+      let idi;
+      /*let jumpHeight = 21;
+      let currJumpHeight = 1;
+      let midCount = 9;
+      let switchVar = true;*/
+      function subFrame(){
+        elem.style.left = (getInt('left', elem) + 1) +"px";
+        //console.log("Forward: "+Math.floor(getInt('left', elem)) + ">=" + (left+buffer));
+
+        //Jump Animation
+        jumpAni(elem);
+
+        if(Math.floor(getInt('left', elem)) >= (left+buffer)){
+          clearInterval(idi);
+          left = getInt('left', elem);
+        }
+
+      }
+      let id = setInterval(function(){
+        tempCount = tempCount-1;
+        console.log("Count: "+tempCount);
+        jumpAniParams.switchVar = true;
+        idi = setInterval(subFrame, 5);
+        if(tempCount <= 0){
+          clearInterval(id);
+          console.log("F clear");
+          resolve();
+        }
+      }, 400);
+    }
+    function topAni(resolve, reject, count, elem, buffer){
+      let top = getInt('top', elem);
+      //let left = getInt('left', elem);
+      let tempCount = count;
+      let idi;
+      function subFrame(){
+        elem.style.top = (getInt('top', elem) - 1) +"px";
+        //console.log("Top: "+Math.floor(getInt('top', elem)) + "<=" + (top-buffer));
+        if(Math.floor(getInt('top', elem)) <= (top-buffer)){
+          clearInterval(idi);
+          top = getInt('top', elem);
+        }
+      }
+      let id = setInterval(function(){
+        tempCount = tempCount-1;
+        console.log("Count: "+tempCount);
+        idi = setInterval(subFrame, 1);
+        if(tempCount <= 0){
+          clearInterval(id);
+          console.log("T clear");
+          resolve();
+        }
+      }, 400);
+    }
+    function backwardAni(resolve, reject, count, elem, buffer){
+      //let top = getInt('top', elem);
+      let left = getInt('left', elem);
+      let tempCount = count;
+      let idi;
+      function subFrame(){
+        elem.style.left = (getInt('left', elem) - 1) +"px";
+        //console.log("Backward: "+Math.floor(getInt('left', elem)) + "<=" + (left-buffer));
+
+        //Jump Animation
+        jumpAni(elem);
+
+        if(Math.floor(getInt('left', elem)) <= (left-buffer)){
+          clearInterval(idi);
+          left = getInt('left', elem);
+        }
+      }
+      let id = setInterval(function(){
+        tempCount = tempCount-1;
+        console.log("Count: "+tempCount);
+        jumpAniParams.switchVar = true;
+        idi = setInterval(subFrame, 1);
+        if(tempCount <= 0){
+          clearInterval(id);
+          console.log("B clear");
+          resolve();
+        }
+      }, 400);
+    }
+
+    function jumpAni(elem){
+      if(jumpAniParams.currJumpHeight == jumpAniParams.jumpHeight){
+          jumpAniParams.switchVar = "mid";
+          elem.style.top = (getInt('top', elem)+1) +"px";
+      }
+
+      if(jumpAniParams.switchVar == true){
+        elem.style.top = (getInt('top', elem) - 1) +"px";
+        jumpAniParams.currJumpHeight++;
+        console.log("Go up: "+jumpAniParams.currJumpHeight);
+      }
+      if(jumpAniParams.switchVar ==  false){
+        elem.style.top = (getInt('top', elem) + 1) +"px";
+        jumpAniParams.currJumpHeight--;
+        console.log("Go down: "+jumpAniParams.currJumpHeight);
+        if(jumpAniParams.currJumpHeight == -1)
+          jumpAniParams.switchVar = null;
+      }
+      if(jumpAniParams.switchVar == "mid"){
+          jumpAniParams.currJumpHeight = 20;
+          console.log("From Mid: "+jumpAniParams.currJumpHeight);
+          jumpAniParams.midCount--;
+          if(jumpAniParams.midCount == 0){
+            jumpAniParams.midCount = 9;
+            jumpAniParams.switchVar = false;
+          }
+      }
+    }
+
+    function dice(playerCode){
+      console.log(playerCode);
+
+      $('#'+players[playerCode].color).click();
+
+      let num = roll();
+      if(parseInt(num) == 6 && !steps[players[playerCode].color].onBoard){
+        steps[players[playerCode].color].onBoard = true;
+        steps[players[playerCode].color].pos = 1;
+        console.log("Open: "+steps[players[playerCode].color].onBoard);
+        animate(null, 'forward', true, playerCode)
+        return;
+      }
+      //console.log("Obj: "+ JSON.stringify(steps[players[playerCode].color]));
+      if(steps[players[playerCode].color].onBoard){
+        //num = 1;
+        //console.log("changed to 1");
+        let finalval = parseInt(steps[players[playerCode].color].pos)+parseInt(num);
+        //console.log("......"+finalval);
+        if(finalval <= 100)
+          calcSteps(num, playerCode);
+        else return;
+      }
+    }
+
+    function playerMapping(){
+
+    }
+
+    function gettt(elem){
+      //console.log(elem.id);
+      if(colors.indexOf(elem.id) != -1){
+          pawnsLoc[elem.id].x = elem.getBoundingClientRect().x;
+          pawnsLoc[elem.id].y = elem.getBoundingClientRect().y;
+          return;
+      }
+      var rect = elem.getBoundingClientRect();
+      //console.log('X: ' + rect.x + ', ' + 'Y: ' + rect.y);
+      box = {'x': rect.x, 'y': rect.y};
+    }
+
+    function getInt(ver, elem){
+      if(ver == 'top')
+        return Math.abs(parseInt(elem.style.top.split("p")[0]));
+      else if(ver == 'left')
+        return Math.abs(parseInt(elem.style.left.split("p")[0]));
+      else if(ver == 'top')
+        return Math.abs(parseInt(elem.style.top.split("p")[0]));
+    }
+
+  </script>
+
+  <!-- Page 1 -->
+
+  <div id="mBody" class="mainBody">
+    <header id="mHead" class="mainHead">
+        <div class="g1_1" style="float: left;">
+           <img class="picDiv" id="photo1" alt="">
+        </div>
+        <div class="g1_2">
+          <pre id="player-name1"></pre>
+        </div>
+        <div class="g1_3">
+          <div class="g1_3_sub">
+            <i id="a1" class="fas fa-dollar-sign"></i>
+            <label id="a2">150</label>
+            <i id="a3" class="fas fa-plus"></i>
+          </div>
+        </div>
+        <div class="g1_4">
+          <i class="fas fa-cog fa-spin"></i>
+        </div>
+    </header>
+
+    <!-- <div id="alertDiv" style="grid-row: 2">
+
+    </div> -->
+
+    <section id="intro-section" class="mainContent" style="grid-row: 2">
+      <div class="c1">
+
+      </div>
+      <div class="c2">
+        <section style="margin: 0; padding: 20px;" onclick="showGame('random')">
+          <i class="fas fa-globe-asia"></i>
+        </section>
+        <section style="margin: 0; padding: 20px;" onclick="showGame('friends')">
+          <i class="fas fa-user-friends"></i>
+        </section>
+      </div>
+    </section>
+
+    <section id="info-section" style="grid-row: 2">
+      <p>If you can see this, then FBInstant initialized properly and the game has started!</p>
+
+      <img id="photo" class="profile_picture"/>
+
+      <table>
+        <tr>
+          <th>Player Name</th>
+          <td id="player-name"></td>
+        </tr>
+        <tr>
+          <th>Player ID</th>
+          <td id="player-id"></td>
+        </tr>
+        <tr>
+          <th>Context Type</th>
+          <td id="context-type"></td>
+        </tr>
+        <tr>
+          <th>Entrypoint Data</th>
+          <td id="entrypointdata"></td>
+        </tr>
+      </table>
+    </section>
+  </div>
+
+  <!-- Page 2 -->
+
+  <div id="gameDiv" class="gameDiv">
+
+    <div id="gameDivHead" class="gameDivHead">
+      <div class="gdh" onclick="back()">
+        <i class="fas fa-chevron-circle-left"></i>
+      </div>
+      <div class="gdh" onclick="settings()">
+        <i class="fas fa-cog"></i>
+      </div>
+    </div>
+
+    <div class="gameDivContent">
+
+      <div id="wrapperTop" class="wrapper">
+        <div id="wrapperTopSub" class="topPlayers testRed">
+          <div id="pl4" class="player4 testYellow">
+            <!-- <img id="gplr4" alt="P4">
+            <img alt="D4" onclick="dice('player4')" id="dice4"> -->
+          </div>
+          <div id="pl3" class="player3 testYellow">
+            <!-- <img alt="D3" onclick="dice('player3')" id="dice3">
+            <img id="gplr3" alt="P3"> -->
+          </div>
+        </div>
+      </div>
+
+      <div id="wrapperBottom" class="wrapper">
+        <div id="wrapperBottomSub" class="bottomPlayers testRed">
+          <div id="pl1" class="player testYellow">
+            <!-- <img id="gplr" alt="P">
+            <img src="" alt="D" onclick="dice('player1')" id="dice1"> -->
+          </div>
+          <div id="pl2" class="player2 testYellow">
+            <!-- <img src="" alt="D2" onclick="dice('player2')" id="dice2">
+            <img id="gplr2" alt="P2"> -->
+          </div>
+        </div>
+      </div>
+
+      <div id="playArea" class="playArea">
+        <div id="board" class="boardDiv testRed">
+          <img src="" alt="test">
+        </div>
+        <div id="gridDiv" class="gridDiv testYellow">
+          <div class="cFlex" style="grid-row: 1; grid-column: 1">
+            <pre id="100" onclick="gettt(this)">100</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 2">
+            <pre id="99" onclick="gettt(this)">99</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 3">
+            <pre id="98" onclick="gettt(this)">98</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 4">
+            <pre id="97" onclick="gettt(this)">97</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 5">
+            <pre id="96" onclick="gettt(this)">96</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 6">
+            <pre id="95" onclick="gettt(this)">95</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 7">
+            <pre id="94" onclick="gettt(this)">94</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 8">
+            <pre id="93" onclick="gettt(this)">93</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 9">
+            <pre id="92" onclick="gettt(this)">92</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 1; grid-column: 10">
+            <pre id="91" onclick="gettt(this)">91</pre>
+          </div>
+          <!-- Reverse -->
+          <div class="cFlex" style="grid-row: 2; grid-column: 1">
+            <pre id="81" onclick="gettt(this)">81</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 2">
+            <pre id="82" onclick="gettt(this)">82</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 3">
+            <pre id="83" onclick="gettt(this)">83</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 4">
+            <pre id="84" onclick="gettt(this)">84</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 5">
+            <pre id="85" onclick="gettt(this)">85</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 6">
+            <pre id="86" onclick="gettt(this)">86</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 7">
+            <pre id="87" onclick="gettt(this)">87</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 8">
+            <pre id="88" onclick="gettt(this)">88</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 9">
+            <pre id="89" onclick="gettt(this)">89</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 2; grid-column: 10">
+            <pre id="90" onclick="gettt(this)">90</pre>
+          </div>
+          <!-- -->
+          <div class="cFlex" style="grid-row: 3; grid-column: 1">
+            <pre id="80" onclick="gettt(this)">80</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 2">
+            <pre id="79" onclick="gettt(this)">79</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 3">
+            <pre id="78" onclick="gettt(this)">78</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 4">
+            <pre id="77" onclick="gettt(this)">77</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 5">
+            <pre id="76" onclick="gettt(this)">76</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 6">
+            <pre id="75" onclick="gettt(this)">75</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 7">
+            <pre id="74" onclick="gettt(this)">74</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 8">
+            <pre id="73" onclick="gettt(this)">73</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 9">
+            <pre id="72" onclick="gettt(this)">72</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 3; grid-column: 10">
+            <pre id="71" onclick="gettt(this)">71</pre>
+          </div>
+          <!-- Reverse -->
+          <div class="cFlex" style="grid-row: 4; grid-column: 1" >
+            <pre id="61" onclick="gettt(this)">61</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 2">
+            <pre id="62" onclick="gettt(this)">62</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 3">
+            <pre id="63" onclick="gettt(this)">63</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 4">
+            <pre id="64" onclick="gettt(this)">64</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 5">
+            <pre id="65" onclick="gettt(this)">65</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 6">
+            <pre id="66" onclick="gettt(this)">66</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 7">
+            <pre id="67" onclick="gettt(this)">67</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 8">
+            <pre id="68" onclick="gettt(this)">68</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 9">
+            <pre id="69" onclick="gettt(this)">69</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 4; grid-column: 10">
+            <pre id="70" onclick="gettt(this)">70</pre>
+          </div>
+          <!-- -->
+          <div class="cFlex" style="grid-row: 5; grid-column: 1">
+            <pre id="60" onclick="gettt(this)">60</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 2">
+            <pre id="59" onclick="gettt(this)">59</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 3">
+            <pre id="58" onclick="gettt(this)">58</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 4">
+            <pre id="57" onclick="gettt(this)">57</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 5">
+            <pre id="56" onclick="gettt(this)">56</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 6">
+            <pre id="55" onclick="gettt(this)">55</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 7">
+            <pre id="54" onclick="gettt(this)">54</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 8">
+            <pre id="53" onclick="gettt(this)">53</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 9">
+            <pre id="52" onclick="gettt(this)">52</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 5; grid-column: 10">
+            <pre id="51" onclick="gettt(this)">51</pre>
+          </div>
+          <!-- Reverse -->
+          <div class="cFlex" style="grid-row: 6; grid-column: 1">
+            <pre id="41" onclick="gettt(this)">41</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 2">
+            <pre id="42" onclick="gettt(this)">42</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 3">
+            <pre id="43" onclick="gettt(this)">43</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 4">
+            <pre id="44" onclick="gettt(this)">44</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 5">
+            <pre id="45" onclick="gettt(this)">45</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 6">
+            <pre id="46" onclick="gettt(this)">46</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 7">
+            <pre id="47" onclick="gettt(this)">47</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 8">
+            <pre id="48" onclick="gettt(this)">48</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 9">
+            <pre id="49" onclick="gettt(this)">49</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 6; grid-column: 10">
+            <pre id="50" onclick="gettt(this)">50</pre>
+          </div>
+          <!-- -->
+          <div class="cFlex" style="grid-row: 7; grid-column: 1">
+            <pre id="40" onclick="gettt(this)">40</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 2">
+            <pre id="39" onclick="gettt(this)">39</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 3">
+            <pre id="38" onclick="gettt(this)">38</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 4">
+            <pre id="37" onclick="gettt(this)">37</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 5">
+            <pre id="36" onclick="gettt(this)">36</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 6">
+            <pre id="35" onclick="gettt(this)">35</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 7">
+            <pre id="34" onclick="gettt(this)">34</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 8">
+            <pre id="33" onclick="gettt(this)">33</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 9">
+            <pre id="32" onclick="gettt(this)">32</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 7; grid-column: 10">
+            <pre id="31" onclick="gettt(this)">31</pre>
+          </div>
+          <!-- Reverse -->
+          <div class="cFlex" style="grid-row: 8; grid-column: 1">
+            <pre id="21" onclick="gettt(this)">21</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 2">
+            <pre id="22" onclick="gettt(this)">22</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 3">
+            <pre id="23" onclick="gettt(this)">23</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 4">
+            <pre id="24" onclick="gettt(this)">24</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 5">
+            <pre id="25" onclick="gettt(this)">25</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 6">
+            <pre id="26" onclick="gettt(this)">26</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 7">
+            <pre id="27" onclick="gettt(this)">27</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 8">
+            <pre id="28" onclick="gettt(this)">28</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 9">
+            <pre id="29" onclick="gettt(this)">29</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 8; grid-column: 10">
+            <pre id="30" onclick="gettt(this)">30</pre>
+          </div>
+          <!-- -->
+          <div class="cFlex" style="grid-row: 9; grid-column: 1">
+            <pre id="20"onclick="gettt(this)">20</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 2">
+            <pre id="19" onclick="gettt(this)">19</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 3">
+            <pre id="18" onclick="gettt(this)">18</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 4">
+            <pre id="17" onclick="gettt(this)">17</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 5">
+            <pre id="16" onclick="gettt(this)">16</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 6">
+            <pre id="15" onclick="gettt(this)">15</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 7">
+            <pre id="14" onclick="gettt(this)">14</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 8">
+            <pre id="13" onclick="gettt(this)">13</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 9">
+            <pre id="12" onclick="gettt(this)">12</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 9; grid-column: 10">
+            <pre id="11" onclick="gettt(this)">11</pre>
+          </div>
+          <!-- Reverse -->
+          <div class="cFlex" style="grid-row: 10;grid-column: 1;">
+            <pre id="1" onclick="gettt(this)">1</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 2">
+            <pre id="2" onclick="gettt(this)">2</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 3">
+            <pre id="3" onclick="gettt(this)">3</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 4">
+            <pre id="4" onclick="gettt(this)">4</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 5">
+            <pre id="5" onclick="gettt(this)">5</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 6">
+            <pre id="6" onclick="gettt(this)">6</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 7">
+            <pre id="7" onclick="gettt(this)">7</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 8">
+            <pre id="8" onclick="gettt(this)">8</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 9">
+            <pre id="9" onclick="gettt(this)">9</pre>
+          </div>
+          <div class="cFlex" style="grid-row: 10; grid-column: 10">
+            <pre id="10" onclick="gettt(this)">10</pre>
+          </div>
+        </div>
+        <div id="pavillion" class="pav testRed">
+          <div class="pavGrid">
+            <div class="pawn1 cFlex">
+              <i id="red" class="fas fa-chess-pawn" style="position: fixed;" onclick="gettt(this)"></i>
+            </div>
+            <div class="pawn2 cFlex">
+              <i id="yellow" class="fas fa-chess-pawn" style="position: fixed;" onclick="gettt(this)"></i>
+            </div>
+            <div class=" pawn3 cFlex">
+              <i id="green" class="fas fa-chess-pawn" style="position: fixed;" onclick="gettt(this)"></i>
+            </div>
+            <div class="pawn4 cFlex">
+              <i id="blue" class="fas fa-chess-pawn" style="position: fixed;" onclick="gettt(this)"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
